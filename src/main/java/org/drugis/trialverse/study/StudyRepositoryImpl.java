@@ -6,23 +6,32 @@ import java.util.UUID;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import org.drugis.trialverse.CachedQueryTemplateFactory.QueryTemplate;
+import org.drugis.trialverse.QueryTemplateFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+@NoArgsConstructor
+@Getter
+@Setter
 @Component
 public class StudyRepositoryImpl implements StudyRepositoryCustom {
 	@PersistenceContext private EntityManager d_em;
-	
+	@Autowired private QueryTemplateFactory queryTemplateFactory;
 
 	@Override
 	@SuppressWarnings("unchecked")
 	public List<Study> findStudies(
-			QueryTemplate query, 
 			UUID indication,
 			List<UUID> variables,
 			List<UUID> treatments) {
+		QueryTemplate template = this.queryTemplateFactory.buildQueryTemplate("/studiesQuery.template.sql");
 		List<Study> results = d_em.createNativeQuery(
-				query.getTemplate(),
+				template.getTemplate(),
 				Study.class)
 				.setParameter("indication", indication.toString())
 				.getResultList();
